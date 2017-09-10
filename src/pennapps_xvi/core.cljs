@@ -108,6 +108,7 @@
             svg (-> js/d3
                     (.select "div#candlestick")
                     (.append "svg")
+                    (.attr "class" "candlestick")
                     (.attr "width" (+ width margin-left margin-right))
                     (.attr "height" (+ height margin-top margin-bottom))
                     (.append "g")

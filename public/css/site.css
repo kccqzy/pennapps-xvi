@@ -137,8 +137,12 @@ div.stock-pick .pick {
     font-weight: bolder;
 }
 
+svg.candlestick {
+    background-color: rgb(30, 43, 52);
+}
+
 path.candle {
-    stroke: #000000;
+    stroke: rgb(206, 210, 213);
 }
 
 path.candle.body {
@@ -146,15 +150,15 @@ path.candle.body {
 }
 
 path.candle.up {
-    fill: #00AA00;
-    stroke: #00AA00;
+    fill: rgb(151, 247, 126);
+    stroke: rgb(151, 247, 126);
 }
 
 path.candle.down {
-    fill: #FF0000;
-    stroke: #FF0000;
+    fill: rgb(255, 105, 57);
+    stroke: rgb(255, 105, 57);
 }
 
 text {
-    fill: #000;
+    fill: rgb(206, 210, 213);
 }
