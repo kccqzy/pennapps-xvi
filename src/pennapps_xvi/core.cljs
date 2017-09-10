@@ -89,7 +89,13 @@
 (defn investments []
   [:h2 "Long-Term Investments"])
 
-(defn candlestick [raw-data]
+(defonce current-search (r/atom "AAPL"))
+
+(defonce current-range (r/atom 60))
+
+(defonce current-data (r/atom (gen-dummy-stock-data 60)))
+
+(defn candlestick [raw-data range]
   (let [r (js/Math.floor (* 1000000000 (rand)))
         dorender
         (fn [this]
@@ -115,7 +121,7 @@
                       (.append "g")
                       (.attr "transform" (str "translate(" margin-left "," margin-top ")")))
               accessor (-> candlestick (.accessor))
-              data (-> (clj->js @raw-data) (.sort (fn [a b] (js/d3.ascending (.d accessor a) (.d accessor b)))))
+              data (-> (clj->js (take @range @raw-data)) (.sort (fn [a b] (js/d3.ascending (.d accessor a) (.d accessor b)))))
               ]
           (-> svg (.append "g") (.attr "class" "candlestick"))
           (-> svg (.append "g") (.attr "class" "x axis") (.attr "transform" (str "translate(0," height ")")))
@@ -132,18 +138,19 @@
       :component-did-update dorender
       :reagent-render
       (fn [_]
-        [:div {:display "none"} (str @raw-data)]
+        [:div {:display "none"} (str @raw-data @range)]
         [:div.candlestick {:class (str "id" r)}])})))
-
-(defonce current-search (r/atom "aapl"))
-
-(defonce current-data (r/atom (gen-dummy-stock-data 60)))
 
 (defn trading []
   [:div
    [:h2 "Short-Term Trading"]
    [:input {:type "text" :placeholder "Search for a stock symbol..." :class "ticksymbol"
             :value @current-search :on-change #(swap! current-search (constantly (-> % .-target .-value)))}]
+   [:div
+    [:span "Days to Predict (max 60)"]
+    [:input {:type "range" :min "1" :max "60" :step "1"
+             :on-change #(swap! current-range (constantly (js/window.parseInt (-> % .-target .-value) 10)))
+}]]
    [:button {:on-click #(do
                           (swap! current-data (constantly (gen-dummy-stock-data 60)))
                           (POST "https://data.chastiser11.hasura-app.io/v1/query"
@@ -166,12 +173,10 @@
                                                                    "close" c
                                                                    "date" (js/Date. (+ (.getTime today) (* i 86400000)))
                                                                    }
-                                                                  ) predictions-t)]
-                                   (swap! current-data (constantly transformed))
-                                   (print transformed))
-                                 )
-                               }))} "Load Prediction"]
-   [candlestick current-data]])
+                                                                  ) (take 60 predictions-t))]
+                                   (if-not (empty? transformed)
+                                     (swap! current-data (constantly transformed)))))}))} "Load Prediction"]
+   [candlestick current-data current-range]])
 
 (defn analytics []
   [:h2 "Analytics"])
