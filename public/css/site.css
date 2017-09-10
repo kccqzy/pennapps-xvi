@@ -19,7 +19,7 @@ div#container {
 
 div#header {
     flex: 0 0 72px;
-    background-color: #A8C7E1;
+    background-color: rgb(51, 34, 85);
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
@@ -89,6 +89,7 @@ div#sidebar > ul > li > a:hover, div#sidebar > ul > li > a.selected {
 }
 
 div#main-content {
+    overflow: scroll;
     flex: 7 0 0;
     padding: 20px 10px 10px 40px;
 }
@@ -100,4 +101,33 @@ button {
 h1, h2, h3, h4, h5, h6, #main-content p {
     margin-bottom: 0.3em;
     padding-bottom: 0.6em;
+}
+
+div#stock-picks {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    margin: 10px auto;
+    max-width: 400px;
+}
+
+div.stock-pick {
+    flex-basis: 0 0 120px;
+    font-size: 0.8rem;
+}
+
+div.stock-pick img {
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    overflow: hidden;
+}
+
+div.stock-pick .name {
+    text-align: center;
+}
+
+div.stock-pick .pick {
+    text-align: center;
+    font-weight: bolder;
 }
