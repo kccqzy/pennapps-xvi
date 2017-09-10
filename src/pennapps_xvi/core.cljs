@@ -14,8 +14,8 @@
      len
      (iterate (fn [{:strs [open high low close volume date]}]
                 {"open" close
-                 "high" (* close (+ 1.0 (* (rand rand-range) (rand rand-range))))
-                 "low" (* close (- 1.0 (* (rand rand-range) (rand rand-range))))
+                 "high" (* close (+ 1.0 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
+                 "low" (* close (+ 1.0 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
                  "close" (* close (+ 1.001 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
                  "volume" (* volume (+ 1.0 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
                  "date" (js/Date. (+ (.getTime date) 60000))})
@@ -90,10 +90,35 @@
 (defn trading []
   (r/create-class
    {:component-did-mount
-    (fn [this] (print (gen-dummy-stock-data 10)))
+    (fn [this]
+      (let [raw-data (gen-dummy-stock-data 100)
+            width 890
+            height 450
+            x (-> js/techan.scale (.financetime) (.range (clj->js [0 width])))
+            y (-> js/d3 (.scaleLinear) (.range (clj->js [height 0])))
+            candlestick (-> js/techan.plot (.candlestick) (.xScale x) (.yScale y))
+            xAxis (-> js/d3 (.axisBottom) (.scale x))
+            yAxis (-> js/d3 (.axisLeft) (.scale y))
+            svg (-> js/d3 (.select "div#candlestick") (.append "svg") (.attr "width" 960) (.attr "height" 500) (.append "g")
+                    (.attr "transform" "translate(50,20)"))
+            accessor (-> candlestick (.accessor))
+            data (-> (clj->js raw-data) (.sort (fn [a b] (js/d3.ascending (.d accessor a) (.d accessor b)))))
+            ]
+        (js/console.log data)
+        (-> svg (.append "g") (.attr "class" "candlestick"))
+        (-> svg (.append "g") (.attr "class" "x axis") (.attr "transform" "translate(0, 450)"))
+        (-> svg (.append "g") (.attr "class" "y axis") (.append "text") (.attr "transform" "rotate(-90)") (.attr "y" "6")
+            (.attr "dy" ".71em") (.style "text-anchor" "end") (.text "Price ($)"))
+        (.domain x (.map data (.-d (-> candlestick (.accessor)))))
+        (.domain y (.domain (js/techan.scale.plot.ohlc data (-> candlestick (.accessor)))))
+        (-> svg (.selectAll "g.candlestick") (.datum data) (.call candlestick))
+        (-> svg (.selectAll "g.x.axis") (.call xAxis))
+        (-> svg (.selectAll "g.y.axis") (.call yAxis))
+        ))
     :reagent-render
     (fn [_]
-      [:h2 "Short-Term Trading"])}))
+      [:h2 "Short-Term Trading"]
+      [:div#candlestick])}))
 
 (defn analytics []
   [:h2 "Analytics"])

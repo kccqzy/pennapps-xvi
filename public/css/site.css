@@ -136,3 +136,25 @@ div.stock-pick .pick {
     text-align: center;
     font-weight: bolder;
 }
+
+path.candle {
+    stroke: #000000;
+}
+
+path.candle.body {
+    stroke-width: 0;
+}
+
+path.candle.up {
+    fill: #00AA00;
+    stroke: #00AA00;
+}
+
+path.candle.down {
+    fill: #FF0000;
+    stroke: #FF0000;
+}
+
+text {
+    fill: #000;
+}
