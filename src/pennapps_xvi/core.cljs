@@ -91,13 +91,13 @@
   (r/create-class
    {:component-did-mount
     (fn [this]
-      (let [raw-data (gen-dummy-stock-data 100)
+      (let [raw-data (gen-dummy-stock-data 60)
             margin-top 20
             margin-right 20
             margin-bottom 30
             margin-left 50
-            width (- 960 margin-left margin-right)
-            height (- 500 margin-top margin-bottom)
+            width (- 520 margin-left margin-right)
+            height (- 300 margin-top margin-bottom)
             x (-> js/techan.scale (.financetime) (.range (clj->js [0 width])))
             y (-> js/d3 (.scaleLinear) (.range (clj->js [height 0])))
             candlestick (-> js/techan.plot (.candlestick) (.xScale x) (.yScale y))
@@ -113,7 +113,6 @@
             accessor (-> candlestick (.accessor))
             data (-> (clj->js raw-data) (.sort (fn [a b] (js/d3.ascending (.d accessor a) (.d accessor b)))))
             ]
-        (js/console.log data)
         (-> svg (.append "g") (.attr "class" "candlestick"))
         (-> svg (.append "g") (.attr "class" "x axis") (.attr "transform" (str "translate(0," height ")")))
         (-> svg (.append "g") (.attr "class" "y axis") (.append "text") (.attr "transform" "rotate(-90)") (.attr "y" "6")
