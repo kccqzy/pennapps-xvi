@@ -18,8 +18,8 @@
                  "low" (* close (+ 1.0 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
                  "close" (* close (+ 1.001 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
                  "volume" (* volume (+ 1.0 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
-                 "date" (js/Date. (+ (.getTime date) 60000))})
-              {"date" (js/Date. (- (floor-factor (js/Date.now) 60000) (* 60000 len)))
+                 "date" (js/Date. (+ (.getTime date) 86400000))})
+              {"date" (js/Date. (floor-factor (js/Date.now) 86400000))
                "open" 62.40
                "high" 63.34
                "low" 61.79
@@ -88,48 +88,63 @@
 (defn investments []
   [:h2 "Long-Term Investments"])
 
+(defn candlestick [raw-data]
+  (let [r (js/Math.floor (* 1000000000 (rand)))
+        dorender
+        (fn [this]
+        (set! js/window.d3 js/window.d3v4)
+        (let [margin-top 20
+              margin-right 20
+              margin-bottom 30
+              margin-left 50
+              width (- 520 margin-left margin-right)
+              height (- 300 margin-top margin-bottom)
+              x (-> js/techan.scale (.financetime) (.range (clj->js [0 width])))
+              y (-> js/d3 (.scaleLinear) (.range (clj->js [height 0])))
+              candlestick (-> js/techan.plot (.candlestick) (.xScale x) (.yScale y))
+              xAxis (-> js/d3 (.axisBottom) (.scale x))
+              yAxis (-> js/d3 (.axisLeft) (.scale y))
+              svg (-> js/d3
+                      (.select (str "div.candlestick.id" r))
+                      (.html "")
+                      (.append "svg")
+                      (.attr "class" "candlestick")
+                      (.attr "width" (+ width margin-left margin-right))
+                      (.attr "height" (+ height margin-top margin-bottom))
+                      (.append "g")
+                      (.attr "transform" (str "translate(" margin-left "," margin-top ")")))
+              accessor (-> candlestick (.accessor))
+              data (-> (clj->js @raw-data) (.sort (fn [a b] (js/d3.ascending (.d accessor a) (.d accessor b)))))
+              ]
+          (-> svg (.append "g") (.attr "class" "candlestick"))
+          (-> svg (.append "g") (.attr "class" "x axis") (.attr "transform" (str "translate(0," height ")")))
+          (-> svg (.append "g") (.attr "class" "y axis") (.append "text") (.attr "transform" "rotate(-90)") (.attr "y" "6")
+              (.attr "dy" ".71em") (.style "text-anchor" "end") (.text "Price ($)"))
+          (.domain x (.map data (.-d (-> candlestick (.accessor)))))
+          (.domain y (.domain (js/techan.scale.plot.ohlc data (-> candlestick (.accessor)))))
+          (-> svg (.selectAll "g.candlestick") (.datum data) (.call candlestick))
+          (-> svg (.selectAll "g.x.axis") (.call xAxis))
+          (-> svg (.selectAll "g.y.axis") (.call yAxis))
+          ))]
+    (r/create-class
+     {:component-did-mount dorender
+      :component-did-update dorender
+      :reagent-render
+      (fn [_]
+        [:div {:display "none"} (str @raw-data)]
+        [:div.candlestick {:class (str "id" r)}])})))
+
+(defonce current-search (r/atom "aapl"))
+
+(defonce current-data (r/atom (gen-dummy-stock-data 60)))
+
 (defn trading []
-  (r/create-class
-   {:component-did-mount
-    (fn [this]
-      (set! js/window.d3 js/window.d3v4)
-      (let [raw-data (gen-dummy-stock-data 60)
-            margin-top 20
-            margin-right 20
-            margin-bottom 30
-            margin-left 50
-            width (- 520 margin-left margin-right)
-            height (- 300 margin-top margin-bottom)
-            x (-> js/techan.scale (.financetime) (.range (clj->js [0 width])))
-            y (-> js/d3 (.scaleLinear) (.range (clj->js [height 0])))
-            candlestick (-> js/techan.plot (.candlestick) (.xScale x) (.yScale y))
-            xAxis (-> js/d3 (.axisBottom) (.scale x))
-            yAxis (-> js/d3 (.axisLeft) (.scale y))
-            svg (-> js/d3
-                    (.select "div#candlestick")
-                    (.append "svg")
-                    (.attr "class" "candlestick")
-                    (.attr "width" (+ width margin-left margin-right))
-                    (.attr "height" (+ height margin-top margin-bottom))
-                    (.append "g")
-                    (.attr "transform" (str "translate(" margin-left "," margin-top ")")))
-            accessor (-> candlestick (.accessor))
-            data (-> (clj->js raw-data) (.sort (fn [a b] (js/d3.ascending (.d accessor a) (.d accessor b)))))
-            ]
-        (-> svg (.append "g") (.attr "class" "candlestick"))
-        (-> svg (.append "g") (.attr "class" "x axis") (.attr "transform" (str "translate(0," height ")")))
-        (-> svg (.append "g") (.attr "class" "y axis") (.append "text") (.attr "transform" "rotate(-90)") (.attr "y" "6")
-            (.attr "dy" ".71em") (.style "text-anchor" "end") (.text "Price ($)"))
-        (.domain x (.map data (.-d (-> candlestick (.accessor)))))
-        (.domain y (.domain (js/techan.scale.plot.ohlc data (-> candlestick (.accessor)))))
-        (-> svg (.selectAll "g.candlestick") (.datum data) (.call candlestick))
-        (-> svg (.selectAll "g.x.axis") (.call xAxis))
-        (-> svg (.selectAll "g.y.axis") (.call yAxis))
-        ))
-    :reagent-render
-    (fn [_]
-      [:h2 "Short-Term Trading"]
-      [:div#candlestick])}))
+  [:div
+   [:h2 "Short-Term Trading"]
+   [:input {:type "text" :placeholder "Search for a stock symbol..." :class "ticksymbol"
+            :value @current-search :on-change #(swap! current-search (constantly (-> % .-target .-value)))}]
+   [:button {:on-click #(swap! current-data (constantly (gen-dummy-stock-data 60)))} "Load Prediction"]
+   [candlestick current-data]])
 
 (defn analytics []
   [:h2 "Analytics"])

@@ -162,3 +162,10 @@ path.candle.down {
 text {
     fill: rgb(206, 210, 213);
 }
+
+input.ticksymbol {
+    width: 400px;
+    margin: 1em;
+    height: 2em;
+    border-radius: 4px;
+}
