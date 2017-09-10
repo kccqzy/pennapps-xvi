@@ -175,7 +175,7 @@
       [:div#container
      [:div#header
       [:img#logo {:src "img/logo.png" :height 64 :width 65}]
-      [:p#title "Stock Advisors"]
+      [:p#title "Stockpedia"]
       [:p#menu "Welcome Johnson! "
        [:button "Logout"]]]
      [body]
