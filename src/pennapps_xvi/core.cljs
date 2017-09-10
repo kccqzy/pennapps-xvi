@@ -1,7 +1,8 @@
 (ns pennapps-xvi.core
     (:require
      [clojure.core]
-      [reagent.core :as r]))
+     [reagent.core :as r]
+     [ajax.core :refer [GET POST]]))
 
 (defn floor-factor [n f]
   (* f (quot n f)))
@@ -143,7 +144,33 @@
    [:h2 "Short-Term Trading"]
    [:input {:type "text" :placeholder "Search for a stock symbol..." :class "ticksymbol"
             :value @current-search :on-change #(swap! current-search (constantly (-> % .-target .-value)))}]
-   [:button {:on-click #(swap! current-data (constantly (gen-dummy-stock-data 60)))} "Load Prediction"]
+   [:button {:on-click #(do
+                          (swap! current-data (constantly (gen-dummy-stock-data 60)))
+                          (POST "https://data.chastiser11.hasura-app.io/v1/query"
+                              {:headers
+                               {
+                                "authorization" "Bearer wj7fmf21w6lvu0l4u7vmdef1tqo0cykn"}
+                               :format :json
+                               :response-format :json
+                               :params
+                               {"type" "select", "args" {"table"  "stockTest", "columns"  ["*"], "where" { "stocksymbol"  @current-search }}}
+                               :handler
+                               (fn [response]
+                                 (let [today (js/Date. (floor-factor (js/Date.now) 86400000))
+                                       predictions (js->clj (js/window.JSON.parse (get-in response [0 "predictions"])))
+                                       predictions-t (apply mapv vector predictions)
+                                       transformed (map-indexed (fn [i [o h l c]]
+                                                                  {"open" o
+                                                                   "high" h
+                                                                   "low" l
+                                                                   "close" c
+                                                                   "date" (js/Date. (+ (.getTime today) (* i 86400000)))
+                                                                   }
+                                                                  ) predictions-t)]
+                                   (swap! current-data (constantly transformed))
+                                   (print transformed))
+                                 )
+                               }))} "Load Prediction"]
    [candlestick current-data]])
 
 (defn analytics []
