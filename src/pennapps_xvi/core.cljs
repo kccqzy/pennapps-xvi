@@ -79,13 +79,15 @@
 (def tabs
   (keys tabmap))
 
-(defonce current-tab (r/atom "Overview"))
+(defonce current-tab (r/atom (or (-> js/window.localStorage (.getItem "current-tab")) "Overview")))
 
 (defn body []
   [:div {:id "body"}
    [:div#sidebar
     [:ul
-     (map (fn [t] [:li {:key t} [:a {:on-click #(swap! current-tab (fn [_] t))
+     (map (fn [t] [:li {:key t} [:a {:on-click #(do
+                                                  (-> js/window.localStorage (.setItem "current-tab" t))
+                                                  (swap! current-tab (fn [_] t)))
                                      :class (if (= @current-tab t) "selected" "")} t]]) tabs)]]
    [:div#main-content
     [(get tabmap @current-tab "Overview")]]])
