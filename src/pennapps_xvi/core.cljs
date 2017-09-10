@@ -9,11 +9,12 @@
 
 (def dummy-portfolio-data
   [
-   ["U.S. Stocks" "11"]
-   ["U.S. Bonds" "22"]
-   ["Cryptocurrencies" "19"]
-   ["Energy" "40"]
-   ["International Stock" "8"]
+   ["U.S. Stocks" "1123"]
+   ["U.S. Bonds" "2287"]
+   ["Cryptocurrencies" "3419"]
+   ["Energy" "4200"]
+   ["International Stock" "877"]
+   ["Emerging Markets" "1877"]
    ])
 
 (def friend-list
@@ -32,11 +33,16 @@
    ["12" "Irene" "FDX"]
    ["13" "Kelly" "FB"]])
 
+(def chart-colors
+  ["#A96186" "#A96162" "#A98461" "#A9A861" "#86A961" "#589857" "#4E876A" "#4E8786" "#4E6B87" "#4E4E87" "#6A4E87" "#8F5390"])
+
 (defn overview []
   (r/create-class
    {:component-did-mount
     (fn [this]
       (js/c3.generate (clj->js {"bindto" "#portfolio-composition"
+                                "color" {"pattern"
+                                         (clojure.core/shuffle chart-colors)}
                                 "data" {"columns" dummy-portfolio-data
                                         "type" "donut"}}))
       )
@@ -94,7 +100,7 @@
      [body]
      [:div#footer
       [:p [:strong "Copyright (c) 2017 Stock Advisors and Company. All rights reserved."]]
-      [:p [:strong "Important Disclaimer: "] "Any past performance, projection, forecast or simulation of results is not necessarily indicative of the future or likely performance of any company or investment. Investors are responsible for paying all taxes imposed by relevant authorities on any interests received and the amount of tax payable is dependent on individual circumstances. The information provided does not take into account your specific investment objectives, financial situation or particular needs. Before you act on any information on this site, you should always seek independent financial, tax, and legal advice or make such independent investigations as you consider necessary or appropriate regarding the suitability of the investment product, taking into account your specific investment objectives, financial situation or particular needs."]]]
+      [:p [:strong "Important Disclaimer: "] "Any past performance, projection, forecast or simulation of results is not necessarily indicative of the future or likely performance of any company or investment. The information provided does not take into account your specific investment objectives, financial situation or particular needs. Before you act on any information on this site, you should always seek independent financial, tax, and legal advice or make such independent investigations as you consider necessary or appropriate regarding the suitability of the investment product, taking into account your specific investment objectives, financial situation or particular needs."]]]
   )
 
 ;; -------------------------

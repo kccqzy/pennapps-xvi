@@ -4,10 +4,10 @@
 }
 
 body {
-  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.15em;
-  color: #333;
+  color: #777;
 }
 
 div#container {
@@ -19,7 +19,7 @@ div#container {
 
 div#header {
     flex: 0 0 72px;
-    background-color: rgb(51, 34, 85);
+    background-color: #477DB1;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
@@ -50,11 +50,16 @@ p#menu {
 
 div#footer {
     flex: 0 0 4em;
-    background-color: #4E6B87;
+    background-color: #477DB1;
     color: white;
     font-size: 0.6rem;
     line-height: 0.72rem;
     padding: 5px;
+}
+
+div#footer p {
+    max-width: 75em;
+    margin: 0 auto;
 }
 
 div#body {
