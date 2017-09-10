@@ -63,6 +63,7 @@
   (r/create-class
    {:component-did-mount
     (fn [this]
+      (set! js/window.d3 js/window.d3v3)
       (js/c3.generate (clj->js {"bindto" "#portfolio-composition"
                                 "color" {"pattern"
                                          (clojure.core/shuffle chart-colors)}
@@ -91,6 +92,7 @@
   (r/create-class
    {:component-did-mount
     (fn [this]
+      (set! js/window.d3 js/window.d3v4)
       (let [raw-data (gen-dummy-stock-data 60)
             margin-top 20
             margin-right 20
