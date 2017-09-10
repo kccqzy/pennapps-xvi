@@ -3,6 +3,29 @@
      [clojure.core]
       [reagent.core :as r]))
 
+(defn floor-factor [n f]
+  (* f (quot n f)))
+
+(defn gen-dummy-stock-data
+  [len]
+  (let [rand-range 0.8
+        rand-range-half (/ rand-range 2)]
+    (take
+     len
+     (iterate (fn [{:strs [open high low close volume date]}]
+                {"open" close
+                 "high" (* close (+ 1.0 (* (rand rand-range) (rand rand-range))))
+                 "low" (* close (- 1.0 (* (rand rand-range) (rand rand-range))))
+                 "close" (* close (+ 1.001 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
+                 "volume" (* volume (+ 1.0 (* (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half) (- (rand rand-range) rand-range-half))))
+                 "date" (js/Date. (+ (.getTime date) 60000))})
+              {"date" (js/Date. (- (floor-factor (js/Date.now) 60000) (* 60000 len)))
+               "open" 62.40
+               "high" 63.34
+               "low" 61.79
+               "close" 62.88
+               "volume" 37617413}))))
+
 
 ;; -------------------------
 ;; Views
@@ -65,7 +88,12 @@
   [:h2 "Long-Term Investments"])
 
 (defn trading []
-  [:h2 "Short-Term Trading"])
+  (r/create-class
+   {:component-did-mount
+    (fn [this] (print (gen-dummy-stock-data 10)))
+    :reagent-render
+    (fn [_]
+      [:h2 "Short-Term Trading"])}))
 
 (defn analytics []
   [:h2 "Analytics"])
